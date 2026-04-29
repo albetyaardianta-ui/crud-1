@@ -12,7 +12,7 @@
                 Tambah data
             </div>
             <div class="card-body">
-                <form action="{{ route('index.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="form-group">
                         <label for="nama">Nama:</label>
@@ -22,11 +22,28 @@
                         @enderror
                     </div>
                     <div class="form-group">
-                        <label for="jenis">Jenis:</label>
-                        <input type="text" class="form-control @error('jenis') is-invalid @enderror" id="jenis" name="jenis" value="{{ old('jenis') }}">
-                        @error('jenis')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <label>Kategori</label>
+    <select name="kategori_id" class="form-control @error('kategori_id') is-invalid @enderror" required>
+        <option value="">-- Pilih Kategori --</option>
+        @foreach ( $kategori as $kat )
+            <option value="{{ $kat->id }}" {{ old('kategori_id') == $kat->id ? 'selected' : '' }}>
+                {{ $kat->nama }}
+            </option>
+        @endforeach
+    </select>
+    @error('kategori_id')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+                            @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="harga_jual">Harga Jual:</label>
