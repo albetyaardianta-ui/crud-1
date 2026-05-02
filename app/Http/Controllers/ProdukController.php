@@ -1,102 +1,103 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Kategori;
-use App\Models\Produk;
+
+use App\Models\Category; 
+use App\Models\Product;  
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
-
-class ProdukController extends Controller
+class ProductController extends Controller
 {
     public function index()
     {
-        $produk = Produk::with('kategori')->get();
-        return view('produk.produk', compact('produk'));
+        $products = Product::with('category')->get();
+        return view('product.index', compact('products'));
     }
 
     public function create()
     {
-       $kategori = Kategori::all();
-        return view('produk.create', compact('kategori'));
+        $categories = Category::all();
+        return view('product.create', compact('categories'));
     }
 
-   public function edit($id)
-{
-    $produk = Produk::findOrFail($id);
-    $kategori = Kategori::all();
-    return view('produk.edit', compact('produk', 'kategori'));
-}
-public function update(Request $request, string $id)
+    public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|max:45',
-            'kategori_id' => 'required',
-            'harga_jual' => 'required|numeric',
-            'harga_beli' => 'required|numeric',
+            'name' => 'required|max:45',
+            'category_id' => 'required|exists:categories,id', 
+            'price' => 'required|numeric',
+            'purchase_price' => 'required|numeric',
             'foto' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
         ]);
 
-        $produk = Produk::findOrFail($id);
-        $fileName = $produk->foto;
+        if ($request->hasFile('foto')) {
+            $fileName = 'foto-' . uniqid() . '.' . $request->foto->extension();
+            $request->foto->move(public_path('image'), $fileName);
+        } else {
+            $fileName = 'nophoto.jpg';
+        }
+
+        
+        Product::create([
+            'name' => $request->name,
+            'category_id' => $request->category_id,
+            'price' => $request->price,
+            'purchase_price' => $request->purchase_price,
+            'description' => $request->description,
+            'foto' => $fileName,
+        ]);
+
+        return redirect()->route('product.index')->with('success', 'Product created successfully!');
+    }
+
+    public function edit($id)
+    {
+        $product = Product::findOrFail($id);
+        $categories = Category::all();
+        return view('product.edit', compact('product', 'categories'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|max:45',
+            'category_id' => 'required',
+            'price' => 'required|numeric',
+            'purchase_price' => 'required|numeric',
+            'foto' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+        ]);
+
+        $product = Product::findOrFail($id);
+        $fileName = $product->foto;
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama jika bukan nophoto.jpg
-            if ($produk->foto && $produk->foto != 'nophoto.jpg' && file_exists(public_path('image/' . $produk->foto))) {
-                unlink(public_path('image/' . $produk->foto));
+            if ($product->foto && $product->foto != 'nophoto.jpg' && file_exists(public_path('image/' . $product->foto))) {
+                unlink(public_path('image/' . $product->foto));
             }
             $fileName = 'foto-' . $id . '.' . $request->foto->extension();
             $request->foto->move(public_path('image'), $fileName);
         }
 
-        $produk->update([
-            'nama' => $request->nama,
-            'kategori_id' => $request->kategori_id,
-            'harga_jual' => $request->harga_jual,
-            'harga_beli' => $request->harga_beli,
-            'deskripsi' => $request->deskripsi,
+        $product->update([
+            'name' => $request->name,
+            'category_id' => $request->category_id,
+            'price' => $request->price,
+            'purchase_price' => $request->purchase_price,
+            'description' => $request->description,
             'foto' => $fileName,
         ]);
 
-        return redirect()->route('produk.index');
-    }
- public function store(Request $request)
-{
-    $request->validate([
-        'nama' => 'required|max:45',
-        'kategori_id' => 'required|exists:kategoris,id',
-        'harga_jual' => 'required',
-        'harga_beli' => 'required',
-        'foto' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
-    ]);
-
-    if (!empty($request->foto)) {
-        $fileName = 'foto-' . uniqid() . '.' . $request->foto->extension();
-        $request->foto->move(public_path('image'), $fileName);
-    } else {
-        $fileName = 'nophoto.jpg';
+        return redirect()->route('product.index')->with('success', 'Product updated successfully!');
     }
 
-   
-    DB::table('produks')->insert([
-        'nama' => $request->nama,
-        'kategori_id' => $request->kategori_id, // Gunakan ini
-        'harga_jual' => $request->harga_jual,
-        'harga_beli' => $request->harga_beli,
-        'deskripsi' => $request->deskripsi,
-        'foto' => $fileName,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-
-    return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan!');
-}
-
-  
-  public function destroy($id)
+    public function destroy($id)
     {
-        $produk = Produk::findOrFail($id);
-        $produk->delete();
-        return redirect()->route('produk.index')->with('success', 'Data berhasil dihapus');
+        $product = Product::findOrFail($id);
+    
+        if ($product->foto && $product->foto != 'nophoto.jpg' && file_exists(public_path('image/' . $product->foto))) {
+            unlink(public_path('image/' . $product->foto));
+        }
+        $product->delete();
+        return redirect()->route('product.index')->with('success', 'Product deleted successfully!');
     }
-};
+}

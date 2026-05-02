@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\ProductController;
 
 
-Route::get('/produk', [ProdukController::class, 'index'])->name('produk.index');
-Route::get('/produk/create', [ProdukController::class, 'create'])->name('produk.create');
-Route::post('/produk/store', [ProdukController::class, 'store'])->name('produk.store');
-Route::get('/produk/edit/{id}', [ProdukController::class, 'edit'])->name('produk.edit');
-Route::put('/produk/update/{id}', [ProdukController::class, 'update'])->name('produk.update');
-Route::delete('/produk/delete/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+Route::get('/product', [ProductController::class, 'index'])->name('product.index');
+Route::get('/product/create', [ProductController::class, 'create'])->name('product.create');
+Route::post('/product/store', [ProductController::class, 'store'])->name('product.store');
+Route::get('/product/edit/{id}', [ProductController::class, 'edit'])->name('product.edit');
+Route::put('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
+Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('product.destroy');
